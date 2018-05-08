@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>d3.js</title>
+    <style>
+        #container{
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+
+</div>
+<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+<script>
+    /**@desc 获取逗号分隔符文件
+     * @type 可以指定一个访问器函数
+     * 这个函数调用CSV文件中的每一行数据，通过当前行数据对象和当前行索引作为两个参数。
+     * 函数的返回值将取代所在返回数组里的元素数据；如果函数返回null，此行便从返回的数组里剔除。
+     */
+    d3.csv('data.csv', type, (data) => {
+        var width = 400,
+            height = 400
+
+        // svg
+        var svg = d3.select('#container')
+            .append('svg')
+            .attr({
+                'width': width,
+                'height': height
+            })
+
+        // 偏移g元素
+        var g = svg.append('g')
+            .attr('transform', 'translate(200,200)')
+
+        // 构造弧生成器 内半径（为0 饼图） 外半径 开始弧度 结束弧度
+        var arc_generator = d3.svg.arc()
+            .innerRadius(100)
+            .outerRadius(200)
+            // .startAngle(0)
+            // .endAngle(120 * Math.PI/180);
+
+        // 构造一个新的饼图函数
+        var angle_data = d3.layout.pie()
+            .value((d) => {return d.population})
+            // .sort(d3.ascending)
+            // .padAngle(10 * Math.PI/180)
+
+        console.log(angle_data(data))
+
+        // 构造一个新的序数比例尺，使用以下10种类型的颜色：
+        var color = d3.scale.category10();
+
+        // 绘制弧形
+        g.selectAll('path')
+            .data(angle_data(data))
+            .enter()
+            .append('path')
+            .attr({
+                'd': arc_generator,
+                'fill': (d, i)=> {return color(i)}
+            })
+
+        // 文字 arc_generator.centroid计算以指定输入参数arguments产生的弧的圆心
+        g.selectAll("text")
+            .data(angle_data(data))
+            .enter()
+            .append("text")
+            .text((d)=>{return d.data.education + d.data.population;})
+            .attr('text-anchor', 'middle')
+            .attr('transform',function(d){return "translate("+arc_generator.centroid(d)+")";})
+
+    })
+
+
+    function type(d) {
+        d.population = +d.population;
+        return d
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>d3.js</title>
+    <style>
+        #container{
+        }
+        path {
+            fill: none;
+            stroke: blue;
+            stroke-width: 2;
+
+        }
+        .domain , .tick line {
+            fill: none;
+            stroke: grey;
+            stroke-width: 2;
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+
+</div>
+<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+<script>
+    var data = [1,3,5,7,8,4,3,7];
+
+    // 水平柱状图 定义画布、元素大小
+    var bar_height = 50,
+        bar_padding = 10,
+        margin = {left:50,top:30,right:20,bottom:20},
+        svg_height = (bar_height + bar_padding) * data.length,
+        svg_width = 500,
+        width = svg_width + margin.left + margin.right,
+        height = svg_height + margin.top + margin.bottom
+
+    // svg
+    var svg = d3.select('#container')
+        .append('svg')
+        .attr({
+            'width': width,
+            'height': height
+        })
+
+    // 定义x轴的缩放函数 domain 输入范围， range 输入范围
+    var scale_x = d3.scale.linear()
+        .domain([0, d3.max(data)])
+        .range([0, svg_width])
+
+    // 定义y轴的缩放函数 domain 输入范围， range 输入范围
+    var scale_y = d3.scale.linear()
+        .domain([0, data.length-1])
+        .range([svg_height, 0])
+
+
+    // 定义元素中每个柱子
+    var bar = svg.selectAll('g')
+        .data(data)
+        .enter()
+        .append('g')
+        .attr('class', 'bar')
+        .attr('transform', (d, i)=> {return `translate(${margin.left}, ${(bar_height + bar_padding) * i})`});
+
+    // 添加柱形图样式
+    bar.append('rect')
+        .attr({
+            'width': (d) => {return scale_x(d)},
+            'height': bar_height,
+            'fill': 'steelblue'
+        })
+
+    // 添加文字 居中
+    bar.append('text')
+        .text((d) => {return d})
+        .attr({
+            'fill': 'white',
+            'x': (d) => {return scale_x(d)},
+            'y': bar_height/2,
+            'text-anchor': 'end'
+        })
+
+
+    // x轴坐标轴 y轴坐标
+    var x_axis = d3.svg.axis().scale(scale_x),
+        y_axis = d3.svg.axis().scale(scale_y).orient("left");
+
+    // 画x轴坐标 并添加文字
+    svg.append("g")
+        .call(x_axis)
+        .attr("transform",`translate(${margin.left}, ${svg_height})`)
+        .append("text")
+        .text("Price($)")
+        .attr("text-anchor","end")
+        .attr("transform",`translate(${svg_height + margin.left}, 0)`)
+        .attr("dy","3em")
+
+    //画y轴坐标
+    svg.append("g")
+        .call(y_axis)
+        .attr("transform",`translate(${margin.left},0)`)
+
+</script>
+</body>
+</html>

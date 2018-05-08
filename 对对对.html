@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>d3.js</title>
+    <style>
+        #container{
+        }
+        path {
+            fill: none;
+            stroke: blue;
+            stroke-width: 2;
+
+        }
+        .domain , .tick line {
+            fill: none;
+            stroke: grey;
+            stroke-width: 2;
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+
+</div>
+<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+<script>
+    var data = [{
+        'year': 1987,
+        'population': 3.6
+    }, {
+        'year': 1990,
+        'population': 2.7
+    }, {
+        'year': 1995,
+        'population': 3.7
+    }, {
+        'year': 1992,
+        'population': 5
+    }, {
+        'year': 1995,
+        'population': 8
+    }]
+
+    // 水平柱状图 定义画布、元素大小
+    var width = 500,
+        height = 500,
+        margin = {left:50,top:30,right:20,bottom:20},
+        svg_width = width + margin.left + margin.right,
+        svg_height = height + margin.top + margin.bottom
+
+    // svg
+    var svg = d3.select('#container')
+        .append('svg')
+        .attr({
+            'width': svg_width,
+            'height': svg_height
+        })
+
+    // 定义x轴的缩放函数 domain 输入范围， range 输入范围
+    var scale_x = d3.scale.ordinal()
+        .domain(data.map((d) => {return d.year}))
+        .rangeBands([0, width], 0.1)
+
+    // 定义y轴的缩放函数 domain 输入范围， range 输入范围
+    var scale_y = d3.scale.linear()
+        .domain([0, d3.max(data, (d) => { return d.population})])
+        .range([height, 0])
+
+    var chart = svg.append('g')
+        .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+
+
+
+    // x轴坐标轴 y轴坐标
+    var x_axis = d3.svg.axis().scale(scale_x).orient("bottom"),
+        y_axis = d3.svg.axis().scale(scale_y).orient("left");
+
+    // 画x轴坐标
+    chart.append("g")
+        .call(x_axis)
+        .attr("transform",`translate(0, ${height})`)
+
+    //画y轴坐标
+    chart.append("g")
+        .call(y_axis)
+
+
+    // 定义元素中每个柱子
+    var bar = chart.selectAll('.bar')
+        .data(data)
+        .enter()
+        .append('g')
+        .attr('class', 'bar')
+        .attr('transform', (d, i)=> {console.log(scale_x.rangeBand()); return `translate(${scale_x(d.year)}, 0)`});
+
+    // 添加柱形图样式
+    bar.append('rect')
+        .attr({
+            'y': (d) => { return scale_y(d.population)},
+            'width': scale_x.rangeBand(),
+            'height': (d) => { return height - scale_y(d.population)}
+        })
+
+    // 添加文字 居中
+    bar.append('text')
+        .text((d) => {return d})
+        .attr({
+            'fill': 'white',
+            'x': (d) => { return scale_y(d.population)},
+            'y': 0,
+            'text-anchor': 'end'
+        })
+
+</script>
+</body>
+</html>
