@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>d3.js</title>
+    <style>
+        #container{
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+
+</div>
+<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+<script>
+    var nodes = [ { name: "桂林" }, { name: "广州" },
+              { name: "厦门" }, { name: "杭州" },
+              { name: "上海" }, { name: "青岛" },
+              { name: "天津" } ];
+
+    var edges = [ { source : 0 , target: 1 } , { source : 0 , target: 2 } ,
+               { source : 0 , target: 3 } , { source : 1 , target: 4 } ,
+               { source : 1 , target: 5 } , { source : 1 , target: 6 } ];
+
+
+   //  定义画布、元素大小
+    var width = 400,
+        height = 400
+
+    // svg
+    var svg = d3.select('#container')
+        .append('svg')
+        .attr({
+            'width': width,
+            'height': height
+        })
+
+    // 力导向布局
+    var force = d3.layout.force()
+        .nodes(nodes)
+        .links(edges)
+        .size([width, height])
+        .linkDistance(150)
+        .charge([-400])
+
+    force.start();
+
+    console.log(nodes)
+    console.log(edges)
+
+    var svg_edges = svg.selectAll('line')
+        .data(edges)
+        .enter()
+        .append("line")
+        .style({
+            'stroke': '#ccc',
+            'stroke-width': '1'
+        })
+
+    var color = d3.scale.category20();
+
+    var svg_nodes = svg.selectAll('circle')
+        .data(nodes)
+        .enter()
+        .append('circle')
+        .attr({
+            'r': 20,
+            'fill': (d,i)=>{return color(i)}
+        })
+        .call(force.drag)
+
+    var svg_texts = svg.selectAll("text")
+         .data(nodes)
+         .enter()
+         .append("text")
+         .style("fill", "black")
+         .attr("dx", 20)
+         .attr("dy", 8)
+         .text(function(d){
+            return d.name;
+         });
+
+    force.on("tick", function(){ //对于每一个时间间隔
+        //更新连线坐标
+        svg_edges.attr("x1",function(d){ return d.source.x; })
+            .attr("y1",function(d){ return d.source.y; })
+            .attr("x2",function(d){ return d.target.x; })
+            .attr("y2",function(d){ return d.target.y; });
+     
+        //更新节点坐标
+        svg_nodes.attr("cx",function(d){ return d.x; })
+            .attr("cy",function(d){ return d.y; });
+
+        //更新文字坐标
+        svg_texts.attr("x", function(d){ return d.x; })
+           .attr("y", function(d){ return d.y; });
+     });
+</script>
+</body>
+</html>
